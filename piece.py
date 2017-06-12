@@ -46,3 +46,50 @@ class Knight(Piece):
         Piece.__init__(self, pType.Knight, color, pos)
         self.choices = [(-1, -2), (-2, -1), (-2, 1), (-1, 2),
                         (1, 2), (2, 1), (2, -1), (1, -2)]
+
+
+class Rook(Piece):
+
+    def __init__(self, color, pos):
+        Piece.__init__(self, pType.Rook, color, pos)
+        self.choices = []
+        for i in range(7):
+            self.choices.append((0, i + 1))
+            self.choices.append((0, -(i + 1)))
+            self.choices.append((i + 1, 0))
+            self.choices.append((-(i + 1), 0))
+
+
+class Bishop(Piece):
+
+    def __init__(self, color, pos):
+        Piece.__init__(self, pType.Bishop, color, pos)
+        self.choices = []
+        for i in range(7):
+            self.choices.append((-(i + 1), -(i + 1)))
+            self.choices.append((i + 1, i + 1))
+            self.choices.append((-(i + 1), i + 1))
+            self.choices.append((i + 1, -(i + 1)))
+
+
+class Queen(Piece):
+
+    def __init__(self, color, pos):
+        Piece.__init__(self, pType.Queen, color, pos)
+        self.choices = []
+        for i in range(7):
+            self.choices.append((0, i + 1))
+            self.choices.append((0, -(i + 1)))
+            self.choices.append((i + 1, 0))
+            self.choices.append((-(i + 1), 0))
+            self.choices.append((-(i + 1), -(i + 1)))
+            self.choices.append((i + 1, i + 1))
+            self.choices.append((-(i + 1), i + 1))
+            self.choices.append((i + 1, -(i + 1)))
+
+
+class Pawn(Piece):
+
+    def __init__(self, color, pos):
+        Piece.__init__(self, pType.Pawn, color, pos)
+        self.choices = [(1, 0)]

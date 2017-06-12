@@ -2,10 +2,10 @@ import pygame
 import sys
 from pygame.locals import *
 
-TILESIZE = 50
+TILESIZE = 64
 
-WINDOWWIDTH = 400
-WINDOWHEIGHT = 400
+WINDOWWIDTH = 512
+WINDOWHEIGHT = 512
 
 FPS = 15
 
