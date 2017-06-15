@@ -20,7 +20,7 @@ def main():
         for event in pygame.event.get():
             if event.type == MOUSEBUTTONUP:
                 spotx, spoty = getSpotClicked(event.pos[0], event.pos[1])
-                if game.board.isNotBlank(spotx, spoty):
+                if game.board.isNotBlank(spotx, spoty) and not picked:
                     fromX = spotx
                     fromY = spoty
                     picked = True

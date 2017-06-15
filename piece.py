@@ -92,4 +92,18 @@ class Pawn(Piece):
 
     def __init__(self, color, pos):
         Piece.__init__(self, pType.Pawn, color, pos)
-        self.choices = [(1, 0)]
+        if color == pColor.Black:
+            self.choices = [(1, 0)]
+            self.captures = [(1, -1), (1, 1)]
+        else:
+            self.choices = [(-1, 0)]
+            self.captures = [(-1, -1), (-1, 1)]
+
+    def validCaptures(self):
+        moves = []
+        for choice in self.captures:
+            x = self.pos[0] + choice[0]
+            y = self.pos[1] + choice[1]
+            if x >= 0 and x < 8 and y >= 0 and y < 8:
+                moves.append((x, y))
+        return moves

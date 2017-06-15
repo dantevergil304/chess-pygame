@@ -87,8 +87,58 @@ class Board:
                     elif self.board[i][j].Type == pType.Pawn:
                         displayImage(i, j, './' + c + '/Pawn.png')
 
+    def isCollide(self, from_x, from_y, to_x, to_y):
+        if self.board[from_x][from_y].Type != pType.Knight:
+            dx = to_x - from_x
+            dy = to_y - from_y
+            if dx != 0:
+                dx = dx / abs(dx)
+            if dy != 0:
+                dy = dy / abs(dy)
+            x = int(from_x + dx)
+            y = int(from_y + dy)
+            while x != to_x or y != to_y:
+                if self.board[x][y] != '.':
+                    if self.board[x][y].color == self.board[from_x][from_y].color:
+                        return True
+                x += dx
+                y += dy
+        return False
+
+    def moveToAlly(self, from_x, from_y, to_x, to_y):
+        if self.board[to_x][to_y] != '.':
+            if self.board[to_x][to_y].color == self.board[from_x][from_y].color:
+                return True
+        return False
+
     def move(self, from_x, from_y, to_x, to_y):
-        if (to_x, to_y) in self.board[from_x][from_y].validMoves():
+        if self.isCollide(from_x, from_y, to_x, to_y):
+            return
+        if self.moveToAlly(from_x, from_y, to_x, to_y):
+            return
+
+        # Pawn pieces
+        validMoves = self.board[from_x][from_y].validMoves()
+        if self.board[from_x][from_y].Type == pType.Pawn:
+            # first move
+            validCaptures = self.board[from_x][from_y].validCaptures()
+            if from_x == 1:
+                validMoves.append((from_x + 2, from_y))
+            if from_x == 6:
+                validMoves.append((from_x - 2, from_y))
+            # move
+            if self.board[to_x][to_y] == '.' and (to_x, to_y) in validMoves:
+                self.board[to_x][to_y] = self.board[from_x][from_y]
+                self.board[to_x][to_y].pos = (to_x, to_y)
+                self.board[from_x][from_y] = '.'
+            # capture
+            elif self.board[to_x][to_y] != '.' and (to_x, to_y) in validCaptures:
+                self.board[to_x][to_y] = self.board[from_x][from_y]
+                self.board[to_x][to_y].pos = (to_x, to_y)
+                self.board[from_x][from_y] = '.'
+        # Other pieces
+        elif (to_x, to_y) in validMoves:
+            # check if this is a valid move
             self.board[to_x][to_y] = self.board[from_x][from_y]
             self.board[to_x][to_y].pos = (to_x, to_y)
             self.board[from_x][from_y] = '.'
