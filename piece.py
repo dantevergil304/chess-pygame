@@ -21,6 +21,7 @@ class Piece:
         self.Type = Type
         self.color = color
         self.pos = pos
+        self.moved = False
 
     def validMoves(self):
         moves = []
@@ -38,6 +39,16 @@ class King(Piece):
         Piece.__init__(self, pType.King, color, pos)
         self.choices = [(-1, -1), (0, -1), (1, -1), (-1, 0),
                         (1, 0), (-1, 1), (0, 1), (1, 1)]
+        self.castling = [(0, -2), (0, 2)]
+
+    def validCastling(self):
+        moves = []
+        for choice in self.castling:
+            x = self.pos[0] + choice[0]
+            y = self.pos[1] + choice[1]
+            if x >= 0 and x < 8 and y >= 0 and y < 8:
+                moves.append((x, y))
+        return moves
 
 
 class Knight(Piece):

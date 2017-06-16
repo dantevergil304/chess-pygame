@@ -9,6 +9,7 @@ class Board:
 
     def __init__(self):
         self.board = []
+        self.previousMove = None
 
     """def initBoard(self):
         self.board.append(['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'])
@@ -101,8 +102,8 @@ class Board:
                 if self.board[x][y] != '.':
                     if self.board[x][y].color == self.board[from_x][from_y].color:
                         return True
-                x += dx
-                y += dy
+                x += int(dx)
+                y += int(dy)
         return False
 
     def moveToAlly(self, from_x, from_y, to_x, to_y):
@@ -111,34 +112,62 @@ class Board:
                 return True
         return False
 
+    def promote(self, x, y, pType):
+        self.setPiece(pType, self.board[x][y].color, x, y)
+
+    def makeMove(self, from_x, from_y, to_x, to_y):
+        self.board[to_x][to_y] = self.board[from_x][from_y]
+        self.board[to_x][to_y].pos = (to_x, to_y)
+        self.board[to_x][to_y].moved = True
+        self.board[from_x][from_y] = '.'
+        self.previousMove = (
+            self.board[to_x][to_y].Type, from_x, from_y, to_x, to_y)
+
     def move(self, from_x, from_y, to_x, to_y):
         if self.isCollide(from_x, from_y, to_x, to_y):
             return
         if self.moveToAlly(from_x, from_y, to_x, to_y):
             return
 
+        cellFrom = self.board[from_x][from_y]
+        cellTo = self.board[to_x][to_y]
+        validMoves = cellFrom.validMoves()
         # Pawn pieces
-        validMoves = self.board[from_x][from_y].validMoves()
-        if self.board[from_x][from_y].Type == pType.Pawn:
+        if cellFrom.Type == pType.Pawn:
             # first move
-            validCaptures = self.board[from_x][from_y].validCaptures()
+            validCaptures = cellFrom.validCaptures()
             if from_x == 1:
                 validMoves.append((from_x + 2, from_y))
             if from_x == 6:
                 validMoves.append((from_x - 2, from_y))
             # move
-            if self.board[to_x][to_y] == '.' and (to_x, to_y) in validMoves:
-                self.board[to_x][to_y] = self.board[from_x][from_y]
-                self.board[to_x][to_y].pos = (to_x, to_y)
-                self.board[from_x][from_y] = '.'
-            # capture
-            elif self.board[to_x][to_y] != '.' and (to_x, to_y) in validCaptures:
-                self.board[to_x][to_y] = self.board[from_x][from_y]
-                self.board[to_x][to_y].pos = (to_x, to_y)
-                self.board[from_x][from_y] = '.'
+            if cellTo == '.' and (to_x, to_y) in validMoves:
+                self.makeMove(from_x, from_y, to_x, to_y)
+            # capture and en passant capture
+            elif (to_x, to_y) in validCaptures:
+                if cellTo != '.':
+                    self.makeMove(from_x, from_y, to_x, to_y)
+                elif cellFrom.color == pColor.White and from_x == 3:
+                    if self.previousMove == (pType.Pawn, to_x - 1, to_y, to_x + 1, to_y):
+                        self.makeMove(from_x, from_y, to_x, to_y)
+                        self.board[to_x + 1][to_y] = '.'
+                elif cellFrom.color == pColor.Black and from_x == 4:
+                    if self.previousMove == (pType.Pawn, to_x + 1, to_y, to_x - 1, to_y):
+                        self.makeMove(from_x, from_y, to_x, to_y)
+                        self.board[to_x - 1][to_y] = '.'
+        # King pieces
+        elif cellFrom.Type == pType.King:
+            validCastling = cellFrom.validCastling()
+            # Castling
+            if (to_x, to_y) in validCastling and cellFrom.moved is False:
+                if to_y == from_y + 2 and self.board[to_x][to_y + 1].moved is False:
+                    self.makeMove(from_x, from_y, to_x, to_y)
+                    self.makeMove(to_x, to_y + 1, from_x, from_y + 1)
+                if to_y == from_y - 2 and self.board[to_x][to_y - 2].moved is False:
+                    self.makeMove(from_x, from_y, to_x, to_y)
+                    self.makeMove(to_x, to_y - 2, from_x, from_y - 1)
+            elif (to_x, to_y) in validMoves:
+                self.makeMove(from_x, from_y, to_x, to_y)
         # Other pieces
         elif (to_x, to_y) in validMoves:
-            # check if this is a valid move
-            self.board[to_x][to_y] = self.board[from_x][from_y]
-            self.board[to_x][to_y].pos = (to_x, to_y)
-            self.board[from_x][from_y] = '.'
+            self.makeMove(from_x, from_y, to_x, to_y)
