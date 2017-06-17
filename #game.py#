@@ -1,0 +1,59 @@
+from board import *
+
+
+class Game:
+
+    def __init__(self):
+        self.board = Board()
+
+
+def main():
+    pygame.init()
+    pygame.display.set_caption('Slide Puzzle')
+    game = Game()
+    game.board.initBoard()
+    game.board.draw()
+    pygame.display.update()
+    picked = False
+    promote = False
+    while True:
+        checkForQuit()
+        for event in pygame.event.get():
+            if event.type == MOUSEBUTTONUP:
+                spotx, spoty = getSpotClicked(event.pos[0], event.pos[1])
+                if promote:
+                    print('promoting...')
+                    if button[0].collidepoint(event.pos):
+                        promote = False
+                        game.board.move(fromX, fromY, toX, toY, pType.Queen)
+                    if button[1].collidepoint(event.pos):
+                        promote = False
+                        game.board.move(fromX, fromY, toX, toY, pType.Knight)
+                    if button[2].collidepoint(event.pos):
+                        promote = False
+                        game.board.move(fromX, fromY, toX, toY, pType.Rook)
+                    if button[3].collidepoint(event.pos):
+                        promote = False
+                        game.board.move(fromX, fromY, toX, toY, pType.Bishop)
+
+                el:
+                    if game.board.isNotBlank(spotx, spoty) and not picked:
+                        fromX = spotx
+                        fromY = spoty
+                        Type, color = game.board.getTypeAndColor(fromX, fromY)
+                        picked = True
+                    elif picked:
+                        toX = spotx
+                        toY = spoty
+                        game.board.move(fromX, fromY, toX, toY, None)
+                        if Type == pType.Pawn:
+                            if (color == pColor.White and toX == 0)\
+                                    or (color == pColor.Black and toX == 7):
+                                button = makePopup(522, 15)
+                                promote = True
+                        picked = False
+        game.board.draw()
+        pygame.display.update()
+        FPSCLOCK.tick(FPS)
+
+main()

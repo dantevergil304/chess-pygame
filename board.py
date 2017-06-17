@@ -19,6 +19,9 @@ class Board:
         self.board.append(['P'] * 8)
         self.board.append(['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'])"""
 
+    def getTypeAndColor(self, x, y):
+        return (self.board[x][y].Type, self.board[x][y].color)
+
     def setPiece(self, Type, color, x, y):
         if Type == pType.King:
             self.board[x][y] = King(color, (x, y))
@@ -100,10 +103,11 @@ class Board:
             y = int(from_y + dy)
             while x != to_x or y != to_y:
                 if self.board[x][y] != '.':
-                    if self.board[x][y].color == self.board[from_x][from_y].color:
-                        return True
+                    print(True)
+                    return True
                 x += int(dx)
                 y += int(dy)
+        print(False)
         return False
 
     def moveToAlly(self, from_x, from_y, to_x, to_y):
@@ -112,8 +116,8 @@ class Board:
                 return True
         return False
 
-    def promote(self, x, y, pType):
-        self.setPiece(pType, self.board[x][y].color, x, y)
+    def promote(self, x, y, Type):
+        self.setPiece(Type, self.board[x][y].color, x, y)
 
     def makeMove(self, from_x, from_y, to_x, to_y):
         self.board[to_x][to_y] = self.board[from_x][from_y]
