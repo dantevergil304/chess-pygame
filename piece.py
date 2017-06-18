@@ -25,7 +25,7 @@ class Piece:
 
     def validMoves(self):
         moves = []
-        for choice in self.choices:
+        for choice in self.moves:
             x = self.pos[0] + choice[0]
             y = self.pos[1] + choice[1]
             if x >= 0 and x < 8 and y >= 0 and y < 8:
@@ -37,8 +37,8 @@ class King(Piece):
 
     def __init__(self, color, pos):
         Piece.__init__(self, pType.King, color, pos)
-        self.choices = [(-1, -1), (0, -1), (1, -1), (-1, 0),
-                        (1, 0), (-1, 1), (0, 1), (1, 1)]
+        self.moves = [(-1, -1), (0, -1), (1, -1), (-1, 0),
+                      (1, 0), (-1, 1), (0, 1), (1, 1)]
         self.castling = [(0, -2), (0, 2)]
 
     def validCastling(self):
@@ -55,48 +55,48 @@ class Knight(Piece):
 
     def __init__(self, color, pos):
         Piece.__init__(self, pType.Knight, color, pos)
-        self.choices = [(-1, -2), (-2, -1), (-2, 1), (-1, 2),
-                        (1, 2), (2, 1), (2, -1), (1, -2)]
+        self.moves = [(-1, -2), (-2, -1), (-2, 1), (-1, 2),
+                      (1, 2), (2, 1), (2, -1), (1, -2)]
 
 
 class Rook(Piece):
 
     def __init__(self, color, pos):
         Piece.__init__(self, pType.Rook, color, pos)
-        self.choices = []
+        self.moves = []
         for i in range(7):
-            self.choices.append((0, i + 1))
-            self.choices.append((0, -(i + 1)))
-            self.choices.append((i + 1, 0))
-            self.choices.append((-(i + 1), 0))
+            self.moves.append((0, i + 1))
+            self.moves.append((0, -(i + 1)))
+            self.moves.append((i + 1, 0))
+            self.moves.append((-(i + 1), 0))
 
 
 class Bishop(Piece):
 
     def __init__(self, color, pos):
         Piece.__init__(self, pType.Bishop, color, pos)
-        self.choices = []
+        self.moves = []
         for i in range(7):
-            self.choices.append((-(i + 1), -(i + 1)))
-            self.choices.append((i + 1, i + 1))
-            self.choices.append((-(i + 1), i + 1))
-            self.choices.append((i + 1, -(i + 1)))
+            self.moves.append((-(i + 1), -(i + 1)))
+            self.moves.append((i + 1, i + 1))
+            self.moves.append((-(i + 1), i + 1))
+            self.moves.append((i + 1, -(i + 1)))
 
 
 class Queen(Piece):
 
     def __init__(self, color, pos):
         Piece.__init__(self, pType.Queen, color, pos)
-        self.choices = []
+        self.moves = []
         for i in range(7):
-            self.choices.append((0, i + 1))
-            self.choices.append((0, -(i + 1)))
-            self.choices.append((i + 1, 0))
-            self.choices.append((-(i + 1), 0))
-            self.choices.append((-(i + 1), -(i + 1)))
-            self.choices.append((i + 1, i + 1))
-            self.choices.append((-(i + 1), i + 1))
-            self.choices.append((i + 1, -(i + 1)))
+            self.moves.append((0, i + 1))
+            self.moves.append((0, -(i + 1)))
+            self.moves.append((i + 1, 0))
+            self.moves.append((-(i + 1), 0))
+            self.moves.append((-(i + 1), -(i + 1)))
+            self.moves.append((i + 1, i + 1))
+            self.moves.append((-(i + 1), i + 1))
+            self.moves.append((i + 1, -(i + 1)))
 
 
 class Pawn(Piece):
@@ -104,10 +104,10 @@ class Pawn(Piece):
     def __init__(self, color, pos):
         Piece.__init__(self, pType.Pawn, color, pos)
         if color == pColor.Black:
-            self.choices = [(1, 0)]
+            self.moves = [(1, 0)]
             self.captures = [(1, -1), (1, 1)]
         else:
-            self.choices = [(-1, 0)]
+            self.moves = [(-1, 0)]
             self.captures = [(-1, -1), (-1, 1)]
 
     def validCaptures(self):

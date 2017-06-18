@@ -7,7 +7,7 @@ PROMOTESIZE = 32
 PROMOTEDISTANCE = 47
 RADIUS = 23
 
-WINDOWWIDTH = 704
+WINDOWWIDTH = 512
 WINDOWHEIGHT = 512
 
 WHITE = (255, 255, 255)
@@ -66,14 +66,6 @@ def makeImage(image, top, left):
 
 
 def drawButton(image, x, y):
-    pygame.draw.circle(DISPLAYSURF, WHITE,
-                       (x + PROMOTESIZE // 2, y + PROMOTESIZE // 2), RADIUS, 0)
-    image, rect = makeImage(image, y, x)
-    DISPLAYSURF.blit(image, rect)
-    return rect
-
-
-def drawButton1(image, x, y):
     circleImg, circleRect = makeImage('./promote/circle.png', y - 5, x - 6)
     image, rect = makeImage(image, y, x)
     DISPLAYSURF.blit(circleImg, circleRect)
@@ -88,14 +80,9 @@ def makePopup(x, y):
              './promote/bishop.png']
     button = []
     for path in paths:
-        button.append(drawButton1(path, x, y))
+        button.append(drawButton(path, x, y))
         x += PROMOTEDISTANCE
     return button
-
-
-def deletePopup(x, y):
-    pygame.draw.rect(DISPLAYSURF, BLACK,
-                     (x, y, PROMOTESIZE * 4 + PROMOTEDISTANCE * 3, RADIUS * 2))
 
 
 def terminate():

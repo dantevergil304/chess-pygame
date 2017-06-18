@@ -11,14 +11,6 @@ class Board:
         self.board = []
         self.previousMove = None
 
-    """def initBoard(self):
-        self.board.append(['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'])
-        self.board.append(['p'] * 8)
-        for i in range(4):
-            self.board.append(['.'] * 8)
-        self.board.append(['P'] * 8)
-        self.board.append(['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'])"""
-
     def getTypeAndColor(self, x, y):
         return (self.board[x][y].Type, self.board[x][y].color)
 
@@ -36,33 +28,29 @@ class Board:
         elif Type == pType.Pawn:
             self.board[x][y] = Pawn(color, (x, y))
 
+    def setPieceToPlay(self, row, color):
+        self.setPiece(pType.Rook, color, row, 0)
+        self.setPiece(pType.Knight, color, row, 1)
+        self.setPiece(pType.Bishop, color, row, 2)
+        self.setPiece(pType.Queen, color, row, 3)
+        self.setPiece(pType.King, color, row, 4)
+        self.setPiece(pType.Bishop, color, row, 5)
+        self.setPiece(pType.Knight, color, row, 6)
+        self.setPiece(pType.Rook, color, row, 7)
+        if color == pColor.Black:
+            row += 1
+        else:
+            row -= 1
+        for j in range(8):
+            self.setPiece(pType.Pawn, color, row, j)
+
     def initBoard(self):
         for i in range(8):
             self.board.append([])
             for j in range(8):
                 self.board[i].append('.')
-        # Black Pieces
-        self.setPiece(pType.Rook, pColor.Black, 0, 0)
-        self.setPiece(pType.Knight, pColor.Black, 0, 1)
-        self.setPiece(pType.Bishop, pColor.Black, 0, 2)
-        self.setPiece(pType.Queen, pColor.Black, 0, 3)
-        self.setPiece(pType.King, pColor.Black, 0, 4)
-        self.setPiece(pType.Bishop, pColor.Black, 0, 5)
-        self.setPiece(pType.Knight, pColor.Black, 0, 6)
-        self.setPiece(pType.Rook, pColor.Black, 0, 7)
-        for j in range(8):
-            self.setPiece(pType.Pawn, pColor.Black, 1, j)
-        # White Pieces
-        self.setPiece(pType.Rook, pColor.White, 7, 0)
-        self.setPiece(pType.Knight, pColor.White, 7, 1)
-        self.setPiece(pType.Bishop, pColor.White, 7, 2)
-        self.setPiece(pType.Queen, pColor.White, 7, 3)
-        self.setPiece(pType.King, pColor.White, 7, 4)
-        self.setPiece(pType.Bishop, pColor.White, 7, 5)
-        self.setPiece(pType.Knight, pColor.White, 7, 6)
-        self.setPiece(pType.Rook, pColor.White, 7, 7)
-        for j in range(8):
-            self.setPiece(pType.Pawn, pColor.White, 6, j)
+        self.setPieceToPlay(0, pColor.Black)
+        self.setPieceToPlay(7, pColor.White)
 
     def isNotBlank(self, x, y):
         return self.board[x][y] != '.'
@@ -103,11 +91,9 @@ class Board:
             y = int(from_y + dy)
             while x != to_x or y != to_y:
                 if self.board[x][y] != '.':
-                    print(True)
                     return True
                 x += int(dx)
                 y += int(dy)
-        print(False)
         return False
 
     def moveToAlly(self, from_x, from_y, to_x, to_y):
@@ -127,51 +113,102 @@ class Board:
         self.previousMove = (
             self.board[to_x][to_y].Type, from_x, from_y, to_x, to_y)
 
-    def move(self, from_x, from_y, to_x, to_y):
-        if self.isCollide(from_x, from_y, to_x, to_y):
-            return
-        if self.moveToAlly(from_x, from_y, to_x, to_y):
-            return
+    def getMovePosForPawn(self, from_x, from_y):
+        pos = []
+        # Check move
+        validMoves = self.board[from_x][from_y].validMoves()
+        if from_x == 1:
+            validMoves.append((from_x + 2, from_y))
+        if from_x == 6:
+            validMoves.append((from_x - 2, from_y))
+        for move in validMoves:
+            if self.isCollide(from_x, from_y, move[0], move[1]):
+                continue
+            if self.moveToAlly(from_x, from_y, move[0], move[1]):
+                continue
+            pos.append(move)
+        # Check capture
+        validCaptures = self.board[from_x][from_y].validCaptures()
+        for capture in validCaptures:
+            if self.moveToAlly(from_x, from_y, capture[0], capture[1]):
+                continue
+            # en passant
+            if self.board[capture[0]][capture[1]] == '.':
+                if self.board[from_x][from_y].color == pColor.White:
+                    if from_x != 3 or self.previousMove != \
+                       (pType.Pawn, capture[0] - 1, capture[1], capture[0] + 1, capture[1]):
+                        continue
+                if self.board[from_x][from_y].color == pColor.Black:
+                    if from_x != 4 or self.previousMove != \
+                       (pType.Pawn, capture[0] + 1, capture[1], capture[0] - 1, capture[1]):
+                        continue
+            pos.append(capture)
+        return pos
 
+    def getMovePosForKing(self, from_x, from_y):
+        pos = []
+        # Check castling
+        validCastling = self.board[from_x][from_y].validCastling()
+        if self.board[from_x][from_y].moved is False:
+            for cast in validCastling:
+                if self.isCollide(from_x, from_y, cast[0], cast[1]):
+                    continue
+                if self.moveToAlly(from_x, from_y, cast[0], cast[1]):
+                    continue
+                if (cast[1] != from_y + 2 or self.board[cast[0]][cast[1] + 1].moved is True) \
+                   and (cast[1] != from_y - 2 or self.board[cast[0]][cast[1] - 2].moved is True):
+                    continue
+                pos.append(cast)
+        # Check move
+        validMoves = self.board[from_x][from_y].validMoves()
+        for move in validMoves:
+            if self.isCollide(from_x, from_y, move[0], move[1]):
+                continue
+            if self.moveToAlly(from_x, from_y, move[0], move[1]):
+                continue
+            pos.append(move)
+        return pos
+
+    def getMovePosForPiece(self, from_x, from_y):
+        pos = []
+        validMoves = self.board[from_x][from_y].validMoves()
+        for move in validMoves:
+            if self.isCollide(from_x, from_y, move[0], move[1]):
+                continue
+            if self.moveToAlly(from_x, from_y, move[0], move[1]):
+                continue
+            pos.append(move)
+        return pos
+
+    def move(self, from_x, from_y, to_x, to_y):
         cellFrom = self.board[from_x][from_y]
-        cellTo = self.board[to_x][to_y]
-        validMoves = cellFrom.validMoves()
         # Pawn pieces
         if cellFrom.Type == pType.Pawn:
-            # first move
-            validCaptures = cellFrom.validCaptures()
-            if from_x == 1:
-                validMoves.append((from_x + 2, from_y))
-            if from_x == 6:
-                validMoves.append((from_x - 2, from_y))
-            # move
-            if cellTo == '.' and (to_x, to_y) in validMoves:
+            if (to_x, to_y) in self.getMovePosForPawn(from_x, from_y):
+                # en passant
+                if from_x == 3 and self.board[from_x][from_y].color == pColor.White \
+                   and self.previousMove == (pType.Pawn, to_x - 1, to_y, to_x + 1, to_y):
+                    self.board[to_x + 1][to_y] = '.'
+                if from_x == 4 and self.board[from_x][from_y].color == pColor.Black \
+                   and self.previousMove == (pType.Pawn, to_x + 1, to_y, to_x - 1, to_y):
+                    self.board[to_x - 1][to_y] = '.'
+
                 self.makeMove(from_x, from_y, to_x, to_y)
-            # capture and en passant capture
-            elif (to_x, to_y) in validCaptures:
-                if cellTo != '.':
-                    self.makeMove(from_x, from_y, to_x, to_y)
-                elif cellFrom.color == pColor.White and from_x == 3:
-                    if self.previousMove == (pType.Pawn, to_x - 1, to_y, to_x + 1, to_y):
-                        self.makeMove(from_x, from_y, to_x, to_y)
-                        self.board[to_x + 1][to_y] = '.'
-                elif cellFrom.color == pColor.Black and from_x == 4:
-                    if self.previousMove == (pType.Pawn, to_x + 1, to_y, to_x - 1, to_y):
-                        self.makeMove(from_x, from_y, to_x, to_y)
-                        self.board[to_x - 1][to_y] = '.'
+                return True
         # King pieces
         elif cellFrom.Type == pType.King:
-            validCastling = cellFrom.validCastling()
-            # Castling
-            if (to_x, to_y) in validCastling and cellFrom.moved is False:
-                if to_y == from_y + 2 and self.board[to_x][to_y + 1].moved is False:
-                    self.makeMove(from_x, from_y, to_x, to_y)
-                    self.makeMove(to_x, to_y + 1, from_x, from_y + 1)
-                if to_y == from_y - 2 and self.board[to_x][to_y - 2].moved is False:
-                    self.makeMove(from_x, from_y, to_x, to_y)
-                    self.makeMove(to_x, to_y - 2, from_x, from_y - 1)
-            elif (to_x, to_y) in validMoves:
+            if (to_x, to_y) in self.getMovePosForKing(from_x, from_y):
+                # castling
+                if cellFrom.moved is False:
+                    if to_y == from_y + 2 and self.board[to_x][to_y + 1].moved is False:
+                        self.makeMove(to_x, to_y + 1, from_x, from_y + 1)
+                    if to_y == from_y - 2 and self.board[to_x][to_y - 2].moved is False:
+                        self.makeMove(to_x, to_y - 2, from_x, from_y - 1)
+
                 self.makeMove(from_x, from_y, to_x, to_y)
+                return True
         # Other pieces
-        elif (to_x, to_y) in validMoves:
+        elif (to_x, to_y) in self.getMovePosForPiece(from_x, from_y):
             self.makeMove(from_x, from_y, to_x, to_y)
+            return True
+        return False
