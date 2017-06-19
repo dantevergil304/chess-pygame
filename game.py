@@ -63,7 +63,7 @@ class Game:
                                     self.promote = True
                             if success:
                                 self.previous = 3 - self.previous
-                                self.picked = False
+                            self.picked = False
 
                             """if success:
                                 if color == pColor.White:

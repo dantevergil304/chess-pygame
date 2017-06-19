@@ -1,6 +1,7 @@
 from piece import *
 from graphic import *
 from copy import deepcopy
+import operator
 
 WHITE = (255, 255, 255)
 GREY = (119, 136, 153)
@@ -325,7 +326,12 @@ class Board:
 
     def ALPHA_BETA_SEARCH(self, alpha, beta, depth=0):
         value = -1000000
-        for successor in self.getSuccessors(pColor.Black):
+        successors = self.getSuccessors(pColor.Black)
+        global COUNT
+        COUNT = 0
+        myList = descendingSort(successors)
+        for successor in myList:
+            COUNT += 1
             successorValue = successor.MIN_VALUE(alpha, beta, depth + 1)
             if value < successorValue:
                 value = successorValue
@@ -333,14 +339,18 @@ class Board:
             if value >= beta:
                 break
             alpha = max(alpha, value)
+        print('NUMBER OF NODES: ', COUNT)
         return ret
 
     def MAX_VALUE(self, alpha, beta, depth):
-        print('executing...')
         if depth == 2:
             return self.evaluationFunction()
         v = -1000000
-        for successor in self.getSuccessors(pColor.Black):
+        successors = self.getSuccessors(pColor.Black)
+        myList = descendingSort(successors)
+        global COUNT
+        for successor in myList:
+            COUNT += 1
             v = max(v, successor.MIN_VALUE(alpha, beta, depth + 1))
             if v >= beta:
                 return v
@@ -348,13 +358,34 @@ class Board:
         return v
 
     def MIN_VALUE(self, alpha, beta, depth):
-        print('executing...')
         if depth == 2:
             return self.evaluationFunction()
         v = 1000000
-        for successor in self.getSuccessors(pColor.White):
+        successors = self.getSuccessors(pColor.White)
+        myList = ascendingSort(successors)
+        global COUNT
+        for successor in myList:
+            COUNT += 1
             v = min(v, successor.MAX_VALUE(alpha, beta, depth + 1))
             if v <= alpha:
                 return v
             beta = min(beta, v)
         return v
+
+
+def ascendingSort(successors):
+    myList = []
+    for successor in successors:
+        myList.append((successor, successor.evaluationFunction()))
+    myList.sort(key=operator.itemgetter(1))
+    ret = [k[0] for k in myList]
+    return ret
+
+
+def descendingSort(successors):
+    myList = []
+    for successor in successors:
+        myList.append((successor, successor.evaluationFunction()))
+    myList.sort(key=operator.itemgetter(1), reverse=True)
+    ret = [k[0] for k in myList]
+    return ret
