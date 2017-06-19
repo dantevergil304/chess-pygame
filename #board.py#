@@ -216,7 +216,7 @@ class Board:
             return True
         return False
 
-    def getSuccessors(self):
+    def getSuccessors(self, color):
         successors = []
         pieces = []
         for i in range(8):

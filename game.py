@@ -1,4 +1,5 @@
 from board import *
+import time
 
 
 class Game:
@@ -59,6 +60,11 @@ class Game:
                             if success:
                                 self.previous = 3 - self.previous
                             self.picked = False
+                            """if success and color == pColor.White:
+                                for successor in self.board.getSuccessors():
+                                    successor.draw()
+                                    pygame.display.update()
+                                    time.sleep(0.3)"""
 
             self.board.draw()
             if self.promote is True:
