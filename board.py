@@ -12,6 +12,14 @@ class Board:
         self.board = []
         self.previousMove = None
 
+    def copyBoard(self, Board):
+        for i in range(8):
+            for j in range(8):
+                self.board[i][j] = Board[i][j]
+
+    def getBoard(self):
+        return self.board
+
     def getTypeAndColor(self, x, y):
         return (self.board[x][y].Type, self.board[x][y].color)
 
@@ -125,6 +133,8 @@ class Board:
             if self.board[from_x - 2][from_y] == '.':
                 validMoves.append((from_x - 2, from_y))
         for move in validMoves:
+            if self.board[move[0]][move[1]] != '.':
+                continue
             if self.isCollide(from_x, from_y, move[0], move[1]):
                 continue
             if self.moveToAlly(from_x, from_y, move[0], move[1]):
@@ -158,9 +168,14 @@ class Board:
                     continue
                 if self.moveToAlly(from_x, from_y, cast[0], cast[1]):
                     continue
-                if (cast[1] != from_y + 2 or self.board[cast[0]][cast[1] + 1].moved is True) \
-                   and (cast[1] != from_y - 2 or self.board[cast[0]][cast[1] - 2].moved is True):
-                    continue
+                if self.board[cast[0]][cast[1] + 1] == '.':
+                    if (cast[1] != from_y + 2
+                            or self.board[cast[0]][cast[1] + 1].moved is True):
+                        continue
+                if self.board[cast[0]][cast[1] - 2] == '.':
+                    if (cast[1] != from_y - 2
+                            or self.board[cast[0]][cast[1] - 2].moved is True):
+                        continue
                 pos.append(cast)
         # Check move
         validMoves = self.board[from_x][from_y].validMoves()
@@ -216,12 +231,12 @@ class Board:
             return True
         return False
 
-    def getSuccessors(self):
+    def getSuccessors(self, color):
         successors = []
         pieces = []
         for i in range(8):
             for j in range(8):
-                if self.isNotBlank(i, j):
+                if self.isNotBlank(i, j) and self.board[i][j].color == color:
                     pieces.append(self.board[i][j])
         for piece in pieces:
             from_x = piece.pos[0]
@@ -272,3 +287,74 @@ class Board:
                 else:
                     successors.append(cp)
         return successors
+
+    def evaluationFunction(self):
+        val = 0
+        count = 0
+        kingPos = []
+        for i in range(8):
+            for j in range(8):
+                piece = self.board[i][j]
+                if piece != '.':
+                    count += 1
+                    if piece.Type == pType.King:
+                        kingPos.append(piece)
+                        continue
+                    if piece.color == pColor.White:
+                        val -= piece.value
+                        val -= self.board[i][j].squareTable[7 - i][j]
+                    else:
+                        val += piece.value
+                        val += self.board[i][j].squareTable[i][j]
+        for piece in kingPos:
+            i = piece.pos[0]
+            j = piece.pos[1]
+            if piece.color == pColor.White:
+                val -= piece.value
+                if count < 16:
+                    val -= self.board[i][j].squareTableForEnding[7 - i][j]
+                else:
+                    val -= self.board[i][j].squareTable[7 - i][j]
+            else:
+                val += piece.value
+                if count < 16:
+                    val += self.board[i][j].squareTableForEnding[i][j]
+                else:
+                    val += self.board[i][j].squareTable[i][j]
+        return val
+
+    def ALPHA_BETA_SEARCH(self, alpha, beta, depth=0):
+        value = -1000000
+        for successor in self.getSuccessors(pColor.Black):
+            successorValue = successor.MIN_VALUE(alpha, beta, depth + 1)
+            if value < successorValue:
+                value = successorValue
+                ret = successor
+            if value >= beta:
+                break
+            alpha = max(alpha, value)
+        return ret
+
+    def MAX_VALUE(self, alpha, beta, depth):
+        print('executing...')
+        if depth == 2:
+            return self.evaluationFunction()
+        v = -1000000
+        for successor in self.getSuccessors(pColor.Black):
+            v = max(v, successor.MIN_VALUE(alpha, beta, depth + 1))
+            if v >= beta:
+                return v
+            alpha = max(alpha, v)
+        return v
+
+    def MIN_VALUE(self, alpha, beta, depth):
+        print('executing...')
+        if depth == 2:
+            return self.evaluationFunction()
+        v = 1000000
+        for successor in self.getSuccessors(pColor.White):
+            v = min(v, successor.MAX_VALUE(alpha, beta, depth + 1))
+            if v <= alpha:
+                return v
+            beta = min(beta, v)
+        return v

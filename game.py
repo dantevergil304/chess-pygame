@@ -23,9 +23,14 @@ class Game:
         self.board.initBoard()
         self.board.draw()
         pygame.display.update()
-
         while True:
             checkForQuit()
+            self.now = 3 - self.previous
+            if self.now == 2 and self.promote is False:
+                nextMove = self.board.ALPHA_BETA_SEARCH(-1000000, 1000000)
+                self.board.copyBoard(nextMove.getBoard())
+                self.previous = 3 - self.previous
+                continue
             for event in pygame.event.get():
                 if event.type == MOUSEBUTTONUP:
                     spotx, spoty = getSpotClicked(event.pos[0], event.pos[1])
@@ -39,7 +44,6 @@ class Game:
                         self.checkClickButton(
                             button[3], event.pos, pType.Bishop, toX, toY)
                     elif (spotx, spoty) != (None, None):
-                        self.now = 3 - self.previous
                         if self.board.isNotBlank(spotx, spoty) and not self.picked:
                             fromX = spotx
                             fromY = spoty
@@ -55,13 +59,18 @@ class Game:
                             success = self.board.move(fromX, fromY, toX, toY)
                             if Type == pType.Pawn:
                                 if (color == pColor.White and toX == 0)\
-                                        or (color == pColor.Black and toX == 7):
+                                   or (color == pColor.Black and toX == 7):
                                     self.promote = True
                             if success:
                                 self.previous = 3 - self.previous
-                            self.picked = False
-                            """if success and color == pColor.White:
-                                for successor in self.board.getSuccessors():
+                                self.picked = False
+
+                            """if success:
+                                if color == pColor.White:
+                                    c = pColor.Black
+                                if color == pColor.Black:
+                                    c = pColor.White
+                                for successor in self.board.getSuccessors(c):
                                     successor.draw()
                                     pygame.display.update()
                                     time.sleep(0.3)"""
