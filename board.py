@@ -169,11 +169,11 @@ class Board:
                     continue
                 if self.moveToAlly(from_x, from_y, cast[0], cast[1]):
                     continue
-                if self.board[cast[0]][cast[1] + 1] == '.':
+                if self.board[cast[0]][cast[1] + 1] != '.':
                     if (cast[1] != from_y + 2
                             or self.board[cast[0]][cast[1] + 1].moved is True):
                         continue
-                if self.board[cast[0]][cast[1] - 2] == '.':
+                if self.board[cast[0]][cast[1] - 2] != '.':
                     if (cast[1] != from_y - 2
                             or self.board[cast[0]][cast[1] - 2].moved is True):
                         continue
@@ -318,7 +318,7 @@ class Board:
                     val -= self.board[i][j].squareTable[7 - i][j]
             else:
                 val += piece.value
-                if count < 16:
+                if count < 10:
                     val += self.board[i][j].squareTableForEnding[i][j]
                 else:
                     val += self.board[i][j].squareTable[i][j]

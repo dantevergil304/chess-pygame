@@ -144,7 +144,7 @@ class Queen(Piece):
     def __init__(self, color, pos):
         Piece.__init__(self, pType.Queen, color, pos)
         self.moves = []
-        for i in range(7):
+        for i in range(6, -1, -1):
             self.moves.append((0, i + 1))
             self.moves.append((0, -(i + 1)))
             self.moves.append((i + 1, 0))
