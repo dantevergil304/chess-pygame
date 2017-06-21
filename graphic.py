@@ -74,10 +74,10 @@ def drawButton(image, x, y):
 
 
 def makePopup(x, y):
-    paths = ['./promote/queen.png',
-             './promote/knight.png',
-             './promote/rook.png',
-             './promote/bishop.png']
+    paths = ['./texture/promote/queen.png',
+             './texture/promote/knight.png',
+             './texture/promote/rook.png',
+             './texture/promote/bishop.png']
     button = []
     for path in paths:
         button.append(drawButton(path, x, y))

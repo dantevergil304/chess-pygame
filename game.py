@@ -1,4 +1,5 @@
 from board import *
+from agent import *
 import time
 
 
@@ -6,6 +7,7 @@ class Game:
 
     def __init__(self):
         self.board = Board()
+        self.agent = Agent()
         self.picked = False
         self.promote = False
         self.now = 1
@@ -27,7 +29,7 @@ class Game:
             checkForQuit()
             self.now = 3 - self.previous
             if self.now == 2 and self.promote is False:
-                nextMove = self.board.ALPHA_BETA_SEARCH(-1000000, 1000000)
+                nextMove = self.agent.ALPHA_BETA_SEARCH(self.board, -1000000, 1000000)
                 self.board.copyBoard(nextMove.getBoard())
                 self.previous = 3 - self.previous
                 continue
