@@ -230,8 +230,8 @@ class Board:
             return True
         return False
 
-    def getSuccessors(self, color):
-        successors = []
+    def getActions(self, color):
+        actions = []
         pieces = []
         for i in range(8):
             for j in range(8):
@@ -246,46 +246,49 @@ class Board:
                 moves = self.getMovePosForKing(from_x, from_y)
             else:
                 moves = self.getMovePosForPiece(from_x, from_y)
-
             for move in moves:
-                cp = deepcopy(self)
-                to_x = move[0]
-                to_y = move[1]
-                if piece.Type == pType.Pawn:
-                    if from_x == 3 and cp.board[from_x][from_y].color == pColor.White \
-                       and cp.previousMove == (pType.Pawn, to_x - 1, to_y, to_x + 1, to_y):
-                        cp.board[to_x + 1][to_y] = '.'
-                    if from_x == 4 and cp.board[from_x][from_y].color == pColor.Black \
-                       and cp.previousMove == (pType.Pawn, to_x + 1, to_y, to_x - 1, to_y):
-                        cp.board[to_x - 1][to_y] = '.'
-                elif piece.Type == pType.King:
-                    if cp.board[from_x][from_y].moved is False:
-                        if to_y == from_y + 2 and cp.board[to_x][to_y + 1].moved is False:
-                            cp.makeMove(to_x, to_y + 1, from_x, from_y + 1)
-                        if to_y == from_y - 2 and cp.board[to_x][to_y - 2].moved is False:
-                            cp.makeMove(to_x, to_y - 2, from_x, from_y - 1)
-                cp.makeMove(from_x, from_y, to_x, to_y)
-                if piece.Type == pType.Pawn \
-                    and ((piece.color == pColor.White and to_x == 0)
-                         or (piece.color == pColor.Black and to_x == 7)):
-                    tmp = deepcopy(cp)
-                    tmp.promote(to_x, to_y, pType.Queen)
-                    successors.append(tmp)
+                actions.append((from_x, from_y, move[0], move[1]))
+        return actions
 
-                    tmp = deepcopy(cp)
-                    tmp.promote(to_x, to_y, pType.Knight)
-                    successors.append(tmp)
+    def result(self, action):
+        from_x, from_y, to_x, to_y = action
+        cellFrom = self.board[from_x][from_y]
+        result = deepcopy(self)
+        if cellFrom.Type == pType.Pawn:
+            if from_x == 3 and cellFrom.color == pColor.White \
+                    and self.previousMove == (pType.Pawn, to_x - 1, to_y, to_x + 1, to_y):
+                result.board[to_x + 1][to_y] = '.'
+            if from_x == 4 and cellFrom.color == pColor.Black \
+                    and self.previousMove == (pType.Pawn, to_x + 1, to_y, to_x - 1, to_y):
+                result.board[to_x - 1][to_y] = '.'
+        elif cellFrom.Type == pType.King:
+            if (to_x, to_y) in self.getMovePosForKing(from_x, from_y):
+                if cellFrom.moved is False:
+                    if to_y == from_y + 2 and self.isNotBlank(to_x, to_y + 1) and self.board[to_x][to_y + 1].moved is False:
+                        result.makeMove(to_x, to_y + 1, from_x, from_y + 1)
+                    if to_y == from_y - 2 and self.isNotBlank(to_x, to_y - 2) and self.board[to_x][to_y - 2].moved is False:
+                        result.makeMove(to_x, to_y - 2, from_x, from_y - 1)
+        result.makeMove(from_x, from_y, to_x, to_y)
+        return  result
 
-                    tmp = deepcopy(cp)
-                    tmp.promote(to_x, to_y, pType.Rook)
-                    successors.append(tmp)
-
-                    tmp = deepcopy(cp)
-                    tmp.promote(to_x, to_y, pType.Bishop)
-                    successors.append(tmp)
-                else:
-                    successors.append(cp)
-        return successors
+    def applyAction(self, action):
+        from_x, from_y, to_x, to_y = action
+        cellFrom = self.board[from_x][from_y]
+        if cellFrom.Type == pType.Pawn:
+            if from_x == 3 and cellFrom.color == pColor.White \
+                    and self.previousMove == (pType.Pawn, to_x - 1, to_y, to_x + 1, to_y):
+                self.board[to_x + 1][to_y] = '.'
+            if from_x == 4 and cellFrom.color == pColor.Black \
+                    and self.previousMove == (pType.Pawn, to_x + 1, to_y, to_x - 1, to_y):
+                self.board[to_x - 1][to_y] = '.'
+        elif cellFrom.Type == pType.King:
+            if (to_x, to_y) in self.getMovePosForKing(from_x, from_y):
+                if cellFrom.moved is False:
+                    if to_y == from_y + 2 and self.isNotBlank(to_x, to_y + 1) and self.board[to_x][to_y + 1].moved is False:
+                        self.makeMove(to_x, to_y + 1, from_x, from_y + 1)
+                    if to_y == from_y - 2 and self.isNotBlank(to_x, to_y - 2) and self.board[to_x][to_y - 2].moved is False:
+                        self.makeMove(to_x, to_y - 2, from_x, from_y - 1)
+        self.makeMove(from_x, from_y, to_x, to_y)
 
     def evaluationFunction(self):
         val = 0
@@ -299,25 +302,23 @@ class Board:
                     if piece.Type == pType.King:
                         kingPos.append(piece)
                         continue
+                    squareTable = SQUARETABLE[piece.Type.value]
                     if piece.color == pColor.White:
                         val -= piece.value
-                        val -= self.board[i][j].squareTable[7 - i][j]
+                        val -= squareTable[7 - i][j]
                     else:
                         val += piece.value
-                        val += self.board[i][j].squareTable[i][j]
+                        val += squareTable[i][j]
         for piece in kingPos:
             i = piece.pos[0]
             j = piece.pos[1]
+            squareTable = SQUARETABLE[1]
+            if count < 16:
+                squareTable = SQUARETABLE[0]
             if piece.color == pColor.White:
                 val -= piece.value
-                if count < 16:
-                    val -= self.board[i][j].squareTableForEnding[7 - i][j]
-                else:
-                    val -= self.board[i][j].squareTable[7 - i][j]
+                val -= squareTable[7 - i][j]
             else:
                 val += piece.value
-                if count < 10:
-                    val += self.board[i][j].squareTableForEnding[i][j]
-                else:
-                    val += self.board[i][j].squareTable[i][j]
+                val += squareTable[i][j]
         return val

@@ -1,67 +1,68 @@
 from piece import *
 import operator
+
 class Agent:
     def ALPHA_BETA_SEARCH(self, state, alpha, beta, depth=0):
         value = -1000000
-        successors = state.getSuccessors(pColor.Black)
+        acts = state.getActions(pColor.Black)
+        successors = [state.result(act) for act in acts]
+        actions = descendingSort(acts, successors)
         global COUNT
         COUNT = 0
-        myList = descendingSort(successors)
-        for successor in myList:
+        for action in actions:
             COUNT += 1
-            successorValue = self.MIN_VALUE(successor, alpha, beta, depth + 1)
-            if value < successorValue:
-                value = successorValue
-                ret = successor
+            tmp = self.MIN_VALUE(action[1], alpha, beta, depth+1)
+            #tmp = self.MIN_VALUE(state.result(action), alpha, beta, depth+1)
+            if tmp > value:
+                ret = action[0]
+                value = tmp
             if value >= beta:
-                break
+                return ret
             alpha = max(alpha, value)
-        print('NUMBER OF NODES: ', COUNT)
+        print('Number of Nodes: ', COUNT)
         return ret
 
     def MAX_VALUE(self, state, alpha, beta, depth):
         if depth == 2:
             return state.evaluationFunction()
-        v = -1000000
-        successors = state.getSuccessors(pColor.Black)
-        myList = descendingSort(successors)
+        value = -1000000
+        acts = state.getActions(pColor.Black)
+        successors = [state.result(act) for act in acts]
+        actions = descendingSort(acts, successors)
         global COUNT
-        for successor in myList:
+        for action in actions:
             COUNT += 1
-            v = max(v, self.MIN_VALUE(state, alpha, beta, depth + 1))
-            if v >= beta:
-                return v
-            alpha = max(alpha, v)
-        return v
+            value = max(value, self.MIN_VALUE(action[1], alpha, beta, depth+1))
+            #value = max(value, self.MIN_VALUE(state.result(action), alpha, beta, depth+1))
+            if value >= beta:
+                return value
+            alpha = max(alpha, value)
+        return value
 
     def MIN_VALUE(self, state, alpha, beta, depth):
         if depth == 2:
             return state.evaluationFunction()
-        v = 1000000
-        successors = state.getSuccessors(pColor.White)
-        myList = ascendingSort(successors)
+        value = 1000000
+        acts = state.getActions(pColor.White)
+        successors = [state.result(act) for act in acts]
+        actions = ascendingSort(acts, successors)
         global COUNT
-        for successor in myList:
+        for action in actions:
             COUNT += 1
-            v = min(v, self.MAX_VALUE(state, alpha, beta, depth + 1))
-            if v <= alpha:
-                return v
-            beta = min(beta, v)
-        return v
+            value = min(value, self.MAX_VALUE(action[1], alpha, beta, depth+1))
+            #value = min(value, self.MAX_VALUE(state.result(action), alpha, beta, depth+1))
+            if value <= alpha:
+                return value
+            beta = min(beta, value)
+        return value
 
-def ascendingSort(successors):
-    myList = []
-    for successor in successors:
-        myList.append((successor, successor.evaluationFunction()))
-    myList.sort(key=operator.itemgetter(1))
-    ret = [k[0] for k in myList]
+def ascendingSort(actions, states):
+    evalList = [state.evaluationFunction() for state in states]
+    ret = [(action, state) for (value, action, state) in sorted(zip(evalList, actions, states), key=lambda pair: pair[0])]
     return ret
 
-
-def descendingSort(successors):
-    myList = []
-    for successor in successors:
-        myList.append((successor, successor.evaluationFunction()))
-    myList.sort(key=operator.itemgetter(1), reverse=True)
-    ret = [k[0] for k in myList]
+def descendingSort(actions, states):
+    evalList = [state.evaluationFunction() for state in states]
+    ret = [(action, state) for (value, action, state) in sorted(zip(evalList, actions, states), key=lambda pair: pair[0], reverse=True)]
     return ret
+

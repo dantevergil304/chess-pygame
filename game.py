@@ -29,8 +29,8 @@ class Game:
             checkForQuit()
             self.now = 3 - self.previous
             if self.now == 2 and self.promote is False:
-                nextMove = self.agent.ALPHA_BETA_SEARCH(self.board, -1000000, 1000000)
-                self.board.copyBoard(nextMove.getBoard())
+                action = self.agent.ALPHA_BETA_SEARCH(self.board, -1000000, 1000000)
+                self.board.applyAction(action)
                 self.previous = 3 - self.previous
                 continue
             for event in pygame.event.get():
