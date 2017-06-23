@@ -66,7 +66,7 @@ def makeImage(image, top, left):
 
 
 def drawButton(image, x, y):
-    circleImg, circleRect = makeImage('./promote/circle.png', y - 5, x - 6)
+    circleImg, circleRect = makeImage('./texture/promote/circle.png', y - 5, x - 6)
     image, rect = makeImage(image, y, x)
     DISPLAYSURF.blit(circleImg, circleRect)
     DISPLAYSURF.blit(image, rect)
